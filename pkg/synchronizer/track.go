@@ -256,18 +256,17 @@ func (t *TrackSynchronizer) insertFrameBefore(pkt *rtp.Packet, next *rtp.Packet)
 
 // GetFrameDuration returns frame duration in seconds
 func (t *TrackSynchronizer) GetFrameDuration() time.Duration {
-	t.Lock()
-	defer t.Unlock()
-
 	switch t.track.Kind() {
 	case webrtc.RTPCodecTypeAudio:
 		// round opus packets to 2.5ms
 		round := float64(t.track.Codec().ClockRate) / 400
-		return time.Duration(math.Round(t.stats.AvgSampleDuration/round)) * 2500 * time.Microsecond
+		stats := t.stats
+		return time.Duration(math.Round(stats.AvgSampleDuration/round)) * 2500 * time.Microsecond
 	default:
 		// round video to 1/3000th of a second
 		round := float64(t.track.Codec().ClockRate) / 3000
-		return time.Duration(math.Round(math.Round(t.stats.AvgSampleDuration/round) * 1e6 / 3))
+		stats := t.stats
+		return time.Duration(math.Round(math.Round(stats.AvgSampleDuration/round) * 1e6 / 3))
 	}
 }
 
